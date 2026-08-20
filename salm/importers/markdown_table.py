@@ -56,12 +56,12 @@ def _is_spelled_out(canonical: str, expansion: str) -> bool:
     """Whether people read this term letter by letter.
 
     A true initialism has letters that match the initials of what it stands
-    for: ASP for "Accountable Senior Partner". A label that happens to be
-    written in capitals does not -- GREEN means "Band 4", and nobody says
-    "G R E E N".
+    for: QBR for "Quarterly Business Review". A label that happens to be
+    written in capitals does not -- if AMBER means "Level 3", nobody says
+    "A M B E R".
 
-    Being an ordinary English word is not the test: "asp" is in the dictionary,
-    but ASP here is still spelled out.
+    Being an ordinary English word is not the test: plenty of initialisms
+    spell out dictionary words and are still read letter by letter.
     """
     letters = re.sub(r"[^A-Za-z]", "", canonical).lower()
     initials = "".join(w[0] for w in re.findall(r"[A-Za-z]+", expansion)).lower()
@@ -84,8 +84,8 @@ def _reads_badly_inline(expansion: str) -> bool:
 def _strip_self_reference(canonical: str, expansion: str) -> str:
     """Remove a leading repeat of the term from its own meaning.
 
-    A row like `GREEN | GREEN (Band 4)` would otherwise expand in transcripts
-    to "GREEN (GREEN (Band 4))".
+    A row like `AMBER | AMBER (Level 3)` would otherwise expand in transcripts
+    to "AMBER (AMBER (Level 3))".
     """
     if expansion.upper().startswith(canonical.upper()):
         trimmed = expansion[len(canonical):].strip(" :-–—")
