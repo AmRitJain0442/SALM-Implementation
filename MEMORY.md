@@ -134,6 +134,41 @@ node tests that `pytest` also runs.
 
 ---
 
+## Over-correction: measured, then fixed
+
+The guard against turning ordinary English into jargon was asserted for a long
+time before it was measured. Measuring it found two real defects.
+
+**1. A term that is a prefix of a longer word.** "crimson" scores **0.83**
+against CRIMS because similarity scoring rewards a shared prefix. Fixed by
+refusing a match when the heard word is 2+ characters longer and starts or ends
+with the term — one extra character is still a plausible recognition error
+("Skylar" for "Skylark").
+
+**2. Common words colliding with short acronyms.** Swept the corrector over
+370k English words: **317 false corrections**. The dangerous ones were ordinary
+speech — `crimes` → CRIMS at 0.91 would fire in any compliance meeting, plus
+`rims`, `animus`.
+
+Ratio tuning cannot fix this: `crimes`→`crims` and `RARR`→`ARR` are both a
+single edit. The discriminator is that *crimes is a word people say and RARR is
+not*. So `salm/data/common_words.txt` ships the 20k most frequent English words,
+and a heard word in that list is believed rather than corrected.
+
+**Frequency, not dictionary membership, is the right test.** A full dictionary
+contains "halbert" — and `Halbert → Halberd` is precisely a correction we need.
+All five corrections that fire in evaluation (halbert, orbeck, rarr, skylar,
+quante) sit outside the top 20k; every risky collision sits inside it.
+
+Result: **zero false corrections across all 20k common words**, recall still
+100%, WER 4.2%. Residual false positives over the full 370k are obscure
+(`crimps`, `arar`, `obex`) or actually desirable (`halberds` → `Halberd`).
+
+Threshold sweep 0.65–0.85 gives identical results, so 0.75 is not perched on a
+knife-edge.
+
+---
+
 ## Environment
 
 - Model: `models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8` (~650 MB, gitignored)

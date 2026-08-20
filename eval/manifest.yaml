@@ -33,3 +33,33 @@ clips:
   - audio: eval/audio/kuber.wav
     text: we deployed the service on Kubernetes last night
     terms: [Kubernetes]
+
+# Second speaker (Zira), same jargon -- a little acoustic diversity.
+  - audio: eval/audio/z1.wav
+    text: the Quantex pipeline feeds Halberd every morning
+    terms: [Quantex, Halberd]
+
+  - audio: eval/audio/z2.wav
+    text: CRIMS flagged three exceptions in the Nimbus tier
+    terms: [CRIMS, Nimbus]
+
+  - audio: eval/audio/z3.wav
+    text: Orbex reconciliation runs before the CRIMS batch
+    terms: [Orbex, CRIMS]
+
+# Control clips: ordinary business speech containing NO glossary terms, seeded
+# with words that sit phonetically close to them. Any correction that fires
+# here is a false positive -- turning ordinary English into jargon is the worst
+# failure this system can have.
+controls:
+  - audio: eval/audio/c1.wav
+    text: the number of trades settled quarterly was higher than the estimate
+
+  - audio: eval/audio/c2.wav
+    text: please review the quarterly report before the meeting on Monday
+
+  - audio: eval/audio/c3.wav
+    text: the auditor asked for a breakdown of the reconciliation batch
+
+  - audio: eval/audio/c4.wav
+    text: we should park that item and come back to it next week

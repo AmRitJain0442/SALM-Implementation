@@ -64,6 +64,10 @@ microphone ──► Silero VAD ──► segment at natural pauses
 - [x] macOS setup notes
 - [x] Fixed: capture thread crashed when the browser tab closed mid-session
 - [x] `web/render.js` extracted and tested (9 node tests, run from pytest too)
+- [x] Control clips + false-positive metric in the eval harness
+- [x] Second speaker added to the corpus (recall holds across both voices)
+- [x] Over-correction measured over 370k words and fixed (prefix guard +
+      20k common-word list); zero false corrections on common words
 
 ### In progress
 

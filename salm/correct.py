@@ -15,33 +15,33 @@ from __future__ import annotations
 import difflib
 import re
 from dataclasses import dataclass
+from pathlib import Path
 
 from .glossary import Glossary
 
-# Words that must never be "corrected" into jargon, however similar they look.
-# Short, ordinary English carries most of the false-positive risk.
-COMMON_WORDS = {
-    "a", "about", "after", "again", "all", "already", "also", "and", "another",
-    "any", "are", "around", "as", "at", "back", "batch", "be", "because",
-    "been", "before", "being", "below", "between", "both", "but", "by", "call",
-    "can", "come", "could", "day", "did", "do", "does", "done", "down", "each",
-    "even", "every", "few", "first", "for", "from", "get", "give", "go", "good",
-    "great", "had", "has", "have", "he", "her", "here", "him", "his", "how",
-    "if", "in", "into", "is", "it", "its", "just", "know", "last", "least",
-    "left", "less", "let", "like", "little", "long", "look", "made", "make",
-    "many", "may", "me", "might", "monday", "more", "morning", "most", "much",
-    "must", "my", "need", "never", "new", "next", "night", "no", "not", "now",
-    "number", "of", "off", "on", "once", "one", "only", "onto", "or", "other",
-    "our", "out", "over", "own", "part", "patch", "people", "per", "place",
-    "point", "put", "quarter", "quarterly", "report", "right", "run", "runs",
-    "said", "same", "say", "see", "she", "should", "since", "so", "some",
-    "still", "such", "take", "than", "that", "the", "their", "them", "then",
-    "there", "these", "they", "thing", "think", "this", "those", "three",
-    "through", "time", "to", "today", "too", "trade", "trades", "two", "under",
-    "up", "us", "use", "used", "very", "want", "was", "way", "we", "week",
-    "well", "were", "what", "when", "where", "which", "while", "who", "why",
-    "will", "with", "work", "would", "year", "yes", "yet", "you", "your",
-}
+def _load_common_words() -> frozenset[str]:
+    """The most frequent English words, used to refuse over-correction.
+
+    If the recogniser produced a word this common, it is far more likely to be
+    what the speaker actually said than a mangled glossary term. Measured
+    against 350k English words, this guard removes the false corrections that
+    matter -- "crimes" scores 0.91 against CRIMS and would otherwise be
+    rewritten in any compliance meeting.
+
+    Frequency, not dictionary membership, is the right test: a full dictionary
+    also contains "halbert", and that *is* a near-miss the corrector should fix.
+    """
+    path = Path(__file__).resolve().parent / "data" / "common_words.txt"
+    if not path.exists():
+        return frozenset()
+    return frozenset(
+        line.strip().lower()
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.startswith("#")
+    )
+
+
+COMMON_WORDS = _load_common_words()
 
 # A word, optionally with a possessive tail the recogniser tacked on.
 _WORD = re.compile(r"[A-Za-z][A-Za-z]*(?:'s|'S)?")
@@ -72,6 +72,22 @@ def soundex(word: str) -> str:
         if char not in "hw":
             prev = code
     return (first.upper() + "".join(digits) + "000")[:4]
+
+
+def _is_longer_word_containing(heard: str, term: str) -> bool:
+    """True when the heard word is a real word that merely contains the term.
+
+    Similarity scoring rewards a shared prefix heavily, so a short acronym gets
+    a high score against any longer word starting with it -- "crimson" scores
+    0.83 against "CRIMS". Losing an ordinary word to a false correction is worse
+    than leaving a term uncorrected, so these are refused.
+
+    One or two extra characters is still treated as a plausible recognition
+    error ("Skylar" for "Skylark"), not a different word.
+    """
+    if len(heard) <= len(term) + 1:
+        return False
+    return heard.startswith(term) or heard.endswith(term)
 
 
 @dataclass(frozen=True)
@@ -132,6 +148,9 @@ class Corrector:
             if score > best_score:
                 best, best_score = term, score
         if best is None:
+            return None
+
+        if _is_longer_word_containing(lowered, best.lower()):
             return None
 
         # Accept either a strong spelling match, or a weaker one that also

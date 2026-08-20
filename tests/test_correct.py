@@ -96,3 +96,78 @@ def test_does_not_merge_unrelated_adjacent_words():
     result = corrector.correct("the number of trades")
 
     assert result.text == "the number of trades"
+
+
+def test_does_not_absorb_a_longer_word_that_starts_with_a_term():
+    # "crimson" is ordinary English that happens to begin with "CRIMS".
+    # Similarity scoring rewards the shared prefix and rates it 0.83.
+    corrector = Corrector(glossary("CRIMS"))
+
+    result = corrector.correct("the crimson binder")
+
+    assert result.text == "the crimson binder"
+
+
+def test_still_corrects_a_slightly_truncated_term():
+    # One missing character is a plausible recognition error, not a real word.
+    corrector = Corrector(glossary("Skylark"))
+
+    result = corrector.correct("onto Skylar today")
+
+    assert result.text == "onto Skylark today"
+
+
+def test_does_not_absorb_a_longer_word_that_ends_with_a_term():
+    corrector = Corrector(glossary("Orbex"))
+
+    result = corrector.correct("the superorbex module")
+
+    assert result.text == "the superorbex module"
+
+
+def test_does_not_turn_a_common_english_word_into_an_acronym():
+    """'crimes' scores 0.91 against CRIMS -- but it is an ordinary word."""
+    corrector = Corrector(glossary("CRIMS"))
+
+    result = corrector.correct("the crimes were reported")
+
+    assert result.text == "the crimes were reported"
+
+
+def test_still_corrects_a_non_word_the_recogniser_invented():
+    """'rarr' is not English, so it is safe to treat as a misheard ARR."""
+    corrector = Corrector(glossary("ARR"))
+
+    result = corrector.correct("rarr grew this quarter")
+
+    assert result.text == "ARR grew this quarter"
+
+
+def test_common_word_guard_does_not_block_an_exact_term():
+    # A firm may well name something after an ordinary word.
+    corrector = Corrector(glossary("Bridge"))
+
+    result = corrector.correct("the Bridge report")
+
+    assert result.text == "the Bridge report"
+
+
+def test_no_common_english_word_is_ever_turned_into_jargon():
+    """Property test over the whole shipped word list.
+
+    Over-correction is the failure this system most needs to avoid, so it is
+    checked across every common word rather than by example. Removing the
+    guard makes this fail: "crimes" scores 0.91 against CRIMS.
+
+    It does not prove the thresholds are safe for words *outside* the list --
+    measured separately, those false positives are rare and obscure.
+    """
+    from salm.correct import COMMON_WORDS
+    from salm.config import Config
+    from salm.glossary import Glossary
+
+    corrector = Corrector(Glossary.load(Config().glossary))
+
+    corrupted = [w for w in COMMON_WORDS if corrector._best_match(w, 1)]
+
+    assert corrupted == []
