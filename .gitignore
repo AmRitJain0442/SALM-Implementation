@@ -8,3 +8,7 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+
+# The real firm glossary is proprietary and must never be committed.
+# Ship glossary/terms.example.yaml; keep the live one local.
+glossary/terms.yaml

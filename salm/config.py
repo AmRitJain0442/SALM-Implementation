@@ -8,11 +8,21 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def _glossary_path() -> Path:
+    """The live glossary if present, otherwise the shipped example.
+
+    The real dictionary is gitignored: it is firm-proprietary, and this repo
+    is public. Falling back keeps a fresh clone runnable.
+    """
+    live = ROOT / "glossary" / "terms.yaml"
+    return live if live.exists() else ROOT / "glossary" / "terms.example.yaml"
+
+
 @dataclass
 class Config:
     model_dir: Path = ROOT / "models" / "sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8"
     vad_model: Path = ROOT / "models" / "silero_vad.onnx"
-    glossary: Path = ROOT / "glossary" / "terms.yaml"
+    glossary: Path = field(default_factory=_glossary_path)
     transcript_dir: Path = ROOT / "transcripts"
     num_threads: int = 4
 
