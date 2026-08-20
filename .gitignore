@@ -1,0 +1,10 @@
+# Models are large binaries fetched by scripts/setup.py
+models/
+# Meeting transcripts are sensitive by definition
+transcripts/
+eval/tmp/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/

@@ -1,0 +1,41 @@
+# The firm's jargon and acronyms: single source of truth for the whole pipeline.
+#
+#   canonical    the correct written form (required)
+#   expansion    full definition; required for type: acronym
+#   type         acronym | jargon
+#   spoken_forms extra ways it may be said aloud (used by optional biasing)
+#   boost        per-term override for the optional biasing path
+
+terms:
+  - canonical: ARR
+    expansion: Annual Recurring Revenue
+    type: acronym
+    spoken_forms: ["A R R"]
+
+  - canonical: EBITDA
+    expansion: Earnings Before Interest, Taxes, Depreciation and Amortization
+    type: acronym
+    spoken_forms: ["E B I T D A"]
+
+  - canonical: CRIMS
+    expansion: Client Risk Management System
+    type: acronym
+    spoken_forms: ["C R I M S"]
+
+  - canonical: Quantex
+    type: jargon
+
+  - canonical: Halberd
+    type: jargon
+
+  - canonical: Nimbus
+    type: jargon
+
+  - canonical: Vectrabridge
+    type: jargon
+
+  - canonical: Skylark
+    type: jargon
+
+  - canonical: Orbex
+    type: jargon
