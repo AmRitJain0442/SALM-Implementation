@@ -63,3 +63,36 @@ def test_preserves_surrounding_punctuation():
     result = corrector.correct("onto Skylarc, then done.")
 
     assert result.text == "onto Skylark, then done."
+
+
+def test_corrects_a_multi_word_term():
+    corrector = Corrector(glossary("Nimbus Tier"))
+
+    result = corrector.correct("the Nimbus Teer held up")
+
+    assert result.text == "the Nimbus Tier held up"
+
+
+def test_prefers_the_longer_term_when_both_could_match():
+    corrector = Corrector(glossary("Nimbus", "Nimbus Tier"))
+
+    result = corrector.correct("in Nimbus Teer today")
+
+    assert result.text == "in Nimbus Tier today"
+
+
+def test_multi_word_correction_reports_what_it_heard():
+    corrector = Corrector(glossary("Nimbus Tier"))
+
+    result = corrector.correct("the Nimbus Teer held")
+
+    assert result.hits[0].heard == "Nimbus Teer"
+    assert result.hits[0].canonical == "Nimbus Tier"
+
+
+def test_does_not_merge_unrelated_adjacent_words():
+    corrector = Corrector(glossary("Nimbus Tier"))
+
+    result = corrector.correct("the number of trades")
+
+    assert result.text == "the number of trades"

@@ -50,6 +50,8 @@ microphone ──► Silero VAD ──► segment at natural pauses
 - [x] `server.py` + `web/index.html` — live caption UI
 - [x] Git repo, first commit
 - [x] `metrics.py` + `eval/run_eval.py` — reproducible recall/WER harness
+- [x] Multi-word jargon correction (`Nimbus Tier`, not just single words)
+- [x] Latency measured: RTF 0.088, ~0.93 s after speech ends
 
 - [x] Confluence importer — export → candidate YAML for human review
 - [x] CLI (`python -m salm serve|transcribe|import-glossary|check`)

@@ -92,6 +92,25 @@ the typography itself shows the two stages.
 
 ---
 
+## Performance (measured, Windows dev box, 4 threads)
+
+Real-time factor **0.088** — 11x faster than real time — consistently across
+all clips. Model load is 2.7 s, once at startup.
+
+Latency after a speaker stops, for a 6 s utterance:
+
+| stage | cost |
+|---|---|
+| VAD silence confirmation | 0.40 s |
+| decode (6 s x 0.088) | 0.53 s |
+| **total** | **~0.93 s** |
+
+Comfortably inside the 3–5 s budget, with headroom to spare. There is room to
+raise `max_speech_duration` or lower `min_silence_duration` if longer context
+turns out to help accuracy.
+
+---
+
 ## Environment
 
 - Model: `models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8` (~650 MB, gitignored)
