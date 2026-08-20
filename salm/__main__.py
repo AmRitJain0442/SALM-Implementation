@@ -23,6 +23,14 @@ def cmd_serve(args) -> int:
     config.host, config.port = args.host, args.port
     config.biasing_enabled = args.biasing
 
+    if args.demo is not None:
+        clips = [Path(p) for p in args.demo] or sorted(Path("eval/audio").glob("*.wav"))
+        missing = [c for c in clips if not c.exists()]
+        if missing or not clips:
+            print(f"No demo audio found: {missing or 'eval/audio/*.wav'}", file=sys.stderr)
+            return 1
+        config.demo_audio = tuple(clips)
+
     missing = [p for p in (config.model_dir, config.vad_model) if not Path(p).exists()]
     if missing:
         print("Missing model files. Run: python scripts/setup.py", file=sys.stderr)
@@ -31,6 +39,8 @@ def cmd_serve(args) -> int:
         return 1
 
     print(f"SALM listening on http://{config.host}:{config.port}")
+    if config.demo_audio:
+        print(f"demo mode: replaying {len(config.demo_audio)} recordings")
     print(f"glossary: {config.glossary}")
     if config.biasing_enabled:
         print("contextual biasing: ON (measured worse than correction -- see PLAN.md)")
@@ -107,6 +117,9 @@ def main(argv=None) -> int:
     serve.add_argument("--port", type=int, default=8000)
     serve.add_argument("--biasing", action="store_true",
                        help="enable contextual biasing (off by default; measured worse)")
+    serve.add_argument("--demo", nargs="*", metavar="WAV", default=None,
+                       help="replay recordings instead of the microphone; "
+                            "no argument replays eval/audio/*.wav")
     serve.set_defaults(func=cmd_serve)
 
     one = sub.add_parser("transcribe", help="run one recording through the pipeline")

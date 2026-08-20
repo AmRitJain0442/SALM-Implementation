@@ -1,8 +1,12 @@
-"""The firm's jargon dictionary: the single source of truth for both pipeline stages.
+"""The firm's jargon dictionary: the single source of truth for both stages.
 
 Stage 1 (transcription) needs the *spoken* forms, to bias the ASR decoder.
-Stage 2 (expansion) needs the *written* forms and their definitions.
+Stage 2 (correction and expansion) needs the *written* forms and definitions.
 Both come from one file so the two stages can never drift apart.
+
+Loading is strict on purpose. A misspelled field silently does nothing, and a
+glossary that quietly ignores half its entries corrupts every meeting
+afterwards without anyone noticing.
 """
 
 from __future__ import annotations
@@ -12,6 +16,9 @@ from pathlib import Path
 
 import yaml
 
+TYPES = {"acronym", "jargon"}
+FIELDS = {"canonical", "expansion", "type", "spoken_forms", "boost", "note"}
+
 
 @dataclass(frozen=True)
 class Term:
@@ -20,6 +27,7 @@ class Term:
     type: str = "jargon"
     spoken_forms: tuple[str, ...] = field(default_factory=tuple)
     boost: float | None = None
+    note: str | None = None
 
 
 class Glossary:
@@ -33,27 +41,45 @@ class Glossary:
         terms: list[Term] = []
         seen: set[str] = set()
 
-        for entry in raw.get("terms", []):
+        for index, entry in enumerate(raw.get("terms", [])):
+            where = f"entry {index + 1}"
+
+            if not isinstance(entry, dict) or "canonical" not in entry:
+                raise ValueError(f"{where}: every term needs a 'canonical' form")
+
             canonical = entry["canonical"]
+            where = f"term {canonical!r}"
+
+            unknown = set(entry) - FIELDS
+            if unknown:
+                raise ValueError(
+                    f"{where}: unknown field(s) {', '.join(sorted(unknown))}; "
+                    f"expected one of {', '.join(sorted(FIELDS))}"
+                )
+
+            kind = entry.get("type", "jargon")
+            if kind not in TYPES:
+                raise ValueError(
+                    f"{where}: unknown type {kind!r}; expected acronym or jargon"
+                )
 
             if canonical in seen:
-                raise ValueError(
-                    f"duplicate term {canonical!r}: each canonical form may appear once"
-                )
+                raise ValueError(f"{where}: duplicate; each canonical form may appear once")
             seen.add(canonical)
 
             term = Term(
                 canonical=canonical,
                 expansion=entry.get("expansion"),
-                type=entry.get("type", "jargon"),
+                type=kind,
                 spoken_forms=tuple(entry.get("spoken_forms", ())),
                 boost=entry.get("boost"),
+                note=entry.get("note"),
             )
 
-            # An acronym with no expansion is almost always an authoring mistake:
-            # it would be biased during transcription but silently never expanded.
+            # An acronym with no expansion is almost always an authoring
+            # mistake: it would be corrected but silently never expanded.
             if term.type == "acronym" and not term.expansion:
-                raise ValueError(f"acronym {canonical!r} has no expansion")
+                raise ValueError(f"{where}: acronym has no expansion")
 
             terms.append(term)
 

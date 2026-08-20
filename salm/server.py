@@ -11,7 +11,7 @@ from pathlib import Path
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 
-from .audio import Microphone
+from .audio import ArrayAudioSource, Microphone
 from .config import Config
 from .glossary import Glossary
 from .pipeline import Pipeline, Utterance
@@ -30,7 +30,7 @@ class SessionManager:
         self._queue: asyncio.Queue | None = None
         self._thread: threading.Thread | None = None
         self._session: Session | None = None
-        self._mic: Microphone | None = None
+        self._source = None
         self.utterances: list[Utterance] = []
 
     @property
@@ -90,12 +90,17 @@ class SessionManager:
             hotwords=hotwords,
             hotwords_score=self._config.hotwords_score if hotwords else 0.0,
         )
-        self._mic = Microphone()
+        if self._config.demo_audio:
+            self._source = ArrayAudioSource.from_wavs(
+                self._config.demo_audio, realtime=self._config.demo_realtime
+            )
+        else:
+            self._source = Microphone()
 
         def worker() -> None:
             self._publish({"type": "status", "state": "listening"})
             try:
-                self._session.run(self._mic)
+                self._session.run(self._source)
             except Exception as exc:                      # surface, never swallow
                 self._publish({"type": "error", "message": str(exc)})
             finally:
@@ -107,8 +112,8 @@ class SessionManager:
     def stop(self) -> Path | None:
         if self._session:
             self._session.stop()
-        if self._mic:
-            self._mic.stop()
+        if self._source:
+            self._source.stop()
         if self._thread:
             self._thread.join(timeout=5)
         return self.save_transcript()

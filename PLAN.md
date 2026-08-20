@@ -58,10 +58,17 @@ microphone ──► Silero VAD ──► segment at natural pauses
 - [x] `scripts/setup.py` model downloader + README
 - [x] Server tests (routes, websocket handshake, transcript writing)
 
+- [x] Strict glossary validation (unknown fields, bad types, missing canonical)
+- [x] Demo mode — replay recordings through the live pipeline (`serve --demo`)
+- [x] End-to-end websocket test: audio → VAD → ASR → correct → browser
+- [x] macOS setup notes
+
 ### In progress
 
-- [ ] Live microphone verification end-to-end (server runs; needs a human to
-      speak into it — everything up to the mic boundary is covered by tests)
+- [ ] **Live microphone verification** — everything up to the microphone
+      boundary is now covered by an end-to-end test through demo mode. What
+      remains is one human speaking into a real mic to confirm capture and
+      perceived latency.
 
 ### Not started
 - [ ] Real-audio re-test of contextual biasing (currently disabled on

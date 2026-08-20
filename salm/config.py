@@ -38,5 +38,11 @@ class Config:
     biasing_enabled: bool = False
     hotwords_score: float = 3.0
 
+    # Replay recordings instead of opening the microphone. Lets the demo run
+    # without anyone speaking, and without a working input device.
+    demo_audio: tuple[Path, ...] = ()
+    # Pace the replay like real speech. Tests turn this off to run fast.
+    demo_realtime: bool = True
+
     host: str = "127.0.0.1"
     port: int = 8000

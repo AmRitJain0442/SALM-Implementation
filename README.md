@@ -54,6 +54,14 @@ python -m salm check         # verifies models, glossary, microphone
 python -m salm serve         # http://127.0.0.1:8000
 ```
 
+No microphone handy, or demoing to a room? Replay the sample recordings
+through the live pipeline instead:
+
+```bash
+python -m salm serve --demo            # replays eval/audio/*.wav
+python -m salm serve --demo a.wav b.wav
+```
+
 Then open the page and press **Start listening**. Corrected terms are marked in
 the transcript with what was actually heard beside them, so every change the
 system makes is visible rather than silent.
@@ -146,6 +154,32 @@ conservative floor.
 Python 3.10+. Runs on CPU; no GPU required. Developed on Windows, targeted at
 Apple Silicon — the same code path runs on both, which is why ONNX Runtime was
 chosen over a CUDA-bound toolkit.
+
+Measured on the Windows development machine at 4 threads: real-time factor
+**0.088**, about 11x faster than real time. For a six-second utterance, text
+appears roughly **0.9 s** after the speaker stops — VAD silence confirmation
+plus decode. Model load is 2.7 s, once at startup.
+
+### On macOS (the target platform)
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python scripts/setup.py
+python -m salm check
+```
+
+Two things specific to macOS:
+
+- **Microphone permission.** The first run must be allowed to record. If
+  `salm check` reports no input device, grant your terminal access under
+  System Settings → Privacy & Security → Microphone, then restart the terminal.
+  macOS does not re-prompt.
+- **Threads.** `Config.num_threads` defaults to 4. On an M-series chip, setting
+  it to the number of performance cores is usually worth a little latency.
+
+No Rosetta and no Homebrew packages are needed: `sherpa-onnx` and `sounddevice`
+both ship arm64 wheels.
 
 ## Tests
 

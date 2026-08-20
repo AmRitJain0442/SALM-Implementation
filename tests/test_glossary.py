@@ -66,3 +66,63 @@ def test_biasing_phrases_include_canonical_and_spoken_forms(tmp_path):
     assert "ARR" in phrases
     assert "A R R" in phrases
     assert "Kubernetes" in phrases
+
+
+def test_rejects_an_unknown_field_that_is_probably_a_typo(tmp_path):
+    path = write(tmp_path, """
+        terms:
+          - canonical: ARR
+            expansionn: Annual Recurring Revenue
+            type: acronym
+    """)
+
+    with pytest.raises(ValueError, match="expansionn"):
+        Glossary.load(path)
+
+
+def test_rejects_an_unknown_term_type(tmp_path):
+    path = write(tmp_path, """
+        terms:
+          - canonical: Skylark
+            type: jargonn
+    """)
+
+    with pytest.raises(ValueError, match="jargonn"):
+        Glossary.load(path)
+
+
+def test_rejects_a_term_with_no_canonical_form(tmp_path):
+    path = write(tmp_path, """
+        terms:
+          - expansion: Annual Recurring Revenue
+            type: acronym
+    """)
+
+    with pytest.raises(ValueError, match="canonical"):
+        Glossary.load(path)
+
+
+def test_accepts_a_note_on_a_jargon_term(tmp_path):
+    """The Confluence importer records definitions for jargon as notes."""
+    path = write(tmp_path, """
+        terms:
+          - canonical: Skylark
+            type: jargon
+            note: the trading platform
+    """)
+
+    assert Glossary.load(path).lookup("Skylark").note == "the trading platform"
+
+
+def test_reports_which_entry_was_wrong(tmp_path):
+    path = write(tmp_path, """
+        terms:
+          - canonical: ARR
+            expansion: Annual Recurring Revenue
+            type: acronym
+          - canonical: Skylark
+            type: jargonn
+    """)
+
+    with pytest.raises(ValueError, match="Skylark"):
+        Glossary.load(path)

@@ -9,6 +9,7 @@ of it.
 from __future__ import annotations
 
 import queue
+import time
 import wave
 from pathlib import Path
 from typing import Iterator
@@ -64,11 +65,17 @@ class Microphone:
 
 
 class ArrayAudioSource:
-    """Replays audio already in memory, for evaluation and tests."""
+    """Replays audio already in memory, for evaluation, demos and tests.
 
-    def __init__(self, samples: np.ndarray, block: int = BLOCK):
+    `realtime` paces playback at the speed of real speech, which is what the
+    demo mode needs: the VAD and the caption UI both behave differently when
+    fed a whole meeting instantly.
+    """
+
+    def __init__(self, samples: np.ndarray, block: int = BLOCK, realtime: bool = False):
         self._samples = samples.astype(np.float32)
         self._block = block
+        self._realtime = realtime
 
     @classmethod
     def from_wav(cls, path: str | Path, block: int = BLOCK) -> "ArrayAudioSource":
@@ -81,6 +88,22 @@ class ArrayAudioSource:
         samples = np.frombuffer(raw, dtype=np.int16).astype(np.float32) / 32768.0
         return cls(samples, block=block)
 
+    @classmethod
+    def from_wavs(cls, paths, gap: float = 0.7, block: int = BLOCK,
+                  realtime: bool = False) -> "ArrayAudioSource":
+        """Join several recordings, separated by silence.
+
+        The gap matters: without it the VAD hears one unbroken utterance and
+        the clips run together into a single segment.
+        """
+        silence = np.zeros(int(gap * SAMPLE_RATE), dtype=np.float32)
+        parts: list[np.ndarray] = []
+        for i, path in enumerate(paths):
+            if i:
+                parts.append(silence)
+            parts.append(cls.from_wav(path)._samples)
+        return cls(np.concatenate(parts), block=block, realtime=realtime)
+
     def start(self) -> None:  # symmetry with Microphone
         pass
 
@@ -88,5 +111,12 @@ class ArrayAudioSource:
         pass
 
     def chunks(self) -> Iterator[np.ndarray]:
+        period = self._block / SAMPLE_RATE
+        next_due = time.monotonic() + period
         for i in range(0, len(self._samples), self._block):
             yield self._samples[i : i + self._block]
+            if self._realtime:
+                delay = next_due - time.monotonic()
+                if delay > 0:
+                    time.sleep(delay)
+                next_due += period

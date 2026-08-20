@@ -64,3 +64,29 @@ def test_saves_nothing_when_no_one_spoke(tmp_path):
 
     assert manager.save_transcript() is None
     assert list(tmp_path.iterdir()) == []
+
+
+def test_demo_mode_streams_a_corrected_utterance_to_the_browser(tmp_path):
+    """Exercises the whole path: audio -> VAD -> ASR -> correct -> websocket."""
+    config = Config()
+    config.transcript_dir = tmp_path
+    config.demo_audio = (Path("eval/audio/j4.wav"),)
+    config.demo_realtime = False
+
+    with TestClient(create_app(config)).websocket_connect("/ws") as socket:
+        assert socket.receive_json()["state"] == "idle"
+        socket.send_json({"command": "start"})
+
+        utterance = None
+        for _ in range(12):
+            message = socket.receive_json()
+            if message["type"] == "utterance":
+                utterance = message
+                break
+
+    assert utterance is not None, "no utterance reached the browser"
+    # j4 says "Orbex ... CRIMS ...": Orbex is misheard and repaired,
+    # CRIMS is recognised and expanded.
+    assert "Orbex" in utterance["text"]
+    assert "Client Risk Management System" in utterance["text"]
+    assert utterance["corrections"][0]["canonical"] == "Orbex"
