@@ -42,3 +42,10 @@ terms:
 
   - canonical: Kubernetes
     type: jargon
+
+  # `spoken_forms` matters when an acronym is dictated letter by letter:
+  # the recogniser may write "K Y C", and this maps it back to the term.
+  - canonical: KYC
+    expansion: Know Your Customer
+    type: acronym
+    spoken_forms: ["K Y C"]

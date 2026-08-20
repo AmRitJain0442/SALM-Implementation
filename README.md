@@ -103,6 +103,15 @@ Acronyms are expanded on first use per session and left bare afterwards, which
 keeps a long transcript readable. Jargon is only spelled correctly — rewriting
 every mention of a product name with its definition makes transcripts unusable.
 
+`spoken_forms` is for anything said differently from how it is written. An
+acronym dictated letter by letter often reaches the transcript as `K Y C`, and
+listing that form maps it back to `KYC`. Near-misses of a spoken form are
+recovered too, so `K Y See` also resolves.
+
+**Terms take effect on the next session — no restart.** Edit the file, press
+Stop then Start, and the new terms are live. A malformed file is reported in
+the status bar rather than failing silently.
+
 **The live glossary is gitignored.** Your firm's term list is proprietary and
 this repository is public, so `glossary/terms.yaml` never leaves your machine;
 `glossary/terms.example.yaml` ships in its place and is copied on setup.

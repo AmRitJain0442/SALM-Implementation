@@ -171,3 +171,34 @@ def test_no_common_english_word_is_ever_turned_into_jargon():
     corrupted = [w for w in COMMON_WORDS if corrector._best_match(w, 1)]
 
     assert corrupted == []
+
+
+def spoken(canonical, forms, kind="acronym", expansion="x"):
+    from salm.glossary import Term
+    return Glossary([Term(canonical=canonical, type=kind, expansion=expansion,
+                          spoken_forms=tuple(forms))])
+
+
+def test_a_spoken_form_is_rewritten_to_the_canonical_term():
+    """spoken_forms must work with biasing off, which is the default."""
+    corrector = Corrector(spoken("KYC", ["K Y C"]))
+
+    result = corrector.correct("the K Y C review passed")
+
+    assert result.text == "the KYC review passed"
+
+
+def test_a_near_miss_of_a_spoken_form_is_also_corrected():
+    corrector = Corrector(spoken("KYC", ["K Y C"]))
+
+    result = corrector.correct("the K Y See review")
+
+    assert result.text == "the KYC review"
+
+
+def test_a_spoken_form_does_not_swallow_ordinary_words():
+    corrector = Corrector(spoken("KYC", ["K Y C"]))
+
+    result = corrector.correct("we know the answer")
+
+    assert result.text == "we know the answer"

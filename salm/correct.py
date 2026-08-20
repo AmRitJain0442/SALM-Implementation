@@ -113,15 +113,23 @@ class Corrector:
         self._threshold = threshold
         self._phonetic_threshold = phonetic_threshold
 
-        terms = [t.canonical for t in glossary.terms]
-        self._exact = {t.lower() for t in terms}
-        self._soundex = {t: soundex(t) for t in terms}
+        # Every surface form that should resolve to a canonical term. A
+        # spoken form matters even with biasing off: an acronym dictated
+        # letter by letter can reach the transcript as "K Y C", and the
+        # glossary already records that as how people say it.
+        self._canonical_of: dict[str, str] = {}
+        for term in glossary.terms:
+            for surface in (term.canonical, *term.spoken_forms):
+                self._canonical_of.setdefault(surface, term.canonical)
+
+        self._exact = {t.canonical.lower() for t in glossary.terms}
+        self._soundex = {s: soundex(s) for s in self._canonical_of}
 
         # Grouped by word count so an n-word window is only compared against
-        # terms of the same length.
+        # surface forms of the same length.
         self._by_length: dict[int, list[str]] = {}
-        for term in terms:
-            self._by_length.setdefault(len(term.split()), []).append(term)
+        for surface in self._canonical_of:
+            self._by_length.setdefault(len(surface.split()), []).append(surface)
         self._longest = max(self._by_length, default=1)
 
     def _strip_possessive(self, phrase: str) -> str:
@@ -159,7 +167,8 @@ class Corrector:
         floor = self._phonetic_threshold if sounds_alike else self._threshold
         if best_score < floor:
             return None
-        return best, best_score
+        # A spoken form resolves to the term it stands for.
+        return self._canonical_of[best], best_score
 
     def correct(self, text: str) -> Result:
         words = list(_WORD.finditer(text))
