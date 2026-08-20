@@ -37,13 +37,16 @@ actually uses `▁K u ber n et es`, and that mismatch actively corrupts decoding
 Measured on 4 clips containing 7 invented jargon terms (Quantex, Halberd,
 CRIMS, Nimbus, Vectrabridge, Skylark, Orbex):
 
-| config | term recall | WER |
+| configuration | term recall | WER |
 |---|---|---|
-| off | 6/8 = 75% | 13.8% |
-| score 3 | 6/8 = 75% | 17.2% |
-| score 4 | 6/8 = 75% | 31.0% |
+| transcription only | 8/11 = 73% | 14.3% |
+| **+ glossary correction** | **11/11 = 100%** | **6.1%** |
+| + biasing @ 3 | 7/11 = 64% | 18.4% |
+| + biasing @ 4 | 7/11 = 64% | 28.6% |
+| + biasing @ 5 | 6/11 = 55% | 89.8% |
 
-**No score improved recall.** Above ~4 the context graph fires at wrong
+**No score improved recall; every score made it worse.** On the full
+7-clip corpus biasing loses on *both* metrics. Above ~4 the context graph fires at wrong
 positions and corrupts ordinary speech: `"three exceptions"` → `"Quantexceptions"`,
 `"Orbeck's"` → `"Quick's"`. At score ≥5 it degenerates into repeating the
 hotword. There is no usable window between "no effect" and "damage".

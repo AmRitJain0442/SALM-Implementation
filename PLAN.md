@@ -49,9 +49,10 @@ microphone ──► Silero VAD ──► segment at natural pauses
 - [x] `pipeline.py` / `session.py` — composition, testable without hardware
 - [x] `server.py` + `web/index.html` — live caption UI
 - [x] Git repo, first commit
+- [x] `metrics.py` + `eval/run_eval.py` — reproducible recall/WER harness
 
 ### In progress
-- [ ] Evaluation harness (`eval/`) — measure recall/WER over the whole corpus
+
 - [ ] Confluence importer — export → candidate YAML for human review
 - [ ] CLI entry point + README
 - [ ] Live microphone verification end-to-end
@@ -68,15 +69,17 @@ microphone ──► Silero VAD ──► segment at natural pauses
 The brief specified contextual biasing during transcription. It was built,
 measured, and **turned off** because it made things worse:
 
-| config | jargon recall | WER |
+| configuration | term recall | WER |
 |---|---|---|
-| biasing off | 75% | **13.8%** |
-| biasing score 3 | 75% | 17.2% |
-| biasing score 4 | 75% | 31.0% |
+| transcription only | 8/11 = 73% | 14.3% |
+| **+ glossary correction** | **11/11 = 100%** | **6.1%** |
+| + biasing @ 3 | 7/11 = 64% | 18.4% |
+| + biasing @ 4 | 7/11 = 64% | 28.6% |
+| + biasing @ 5 | 6/11 = 55% | 89.8% |
 
-Zero recall gain, monotonically worse WER, no usable operating window. The
-correction pass that replaced it takes recall **78% → 100%** while *lowering*
-WER. The biasing code path is kept behind `Config.biasing_enabled` so it can be
+Biasing loses on both metrics at every setting. The correction pass that
+replaced it reaches **100% recall while cutting WER by more than half**
+(14.3% → 6.1%). Reproduce with `python eval/run_eval.py --biasing`. The biasing code path is kept behind `Config.biasing_enabled` so it can be
 re-tested on real human audio, which is the one caveat on the result above.
 
 ---

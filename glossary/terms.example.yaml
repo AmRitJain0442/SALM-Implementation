@@ -39,3 +39,6 @@ terms:
 
   - canonical: Orbex
     type: jargon
+
+  - canonical: Kubernetes
+    type: jargon

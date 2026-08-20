@@ -1,0 +1,35 @@
+# Evaluation corpus. `terms` lists the glossary terms that must survive
+# transcription; `text` is the reference used for the WER guardrail.
+#
+# Audio here is Windows SAPI synthesis (see scripts/make_test_audio.ps1).
+# Synthetic speech is a weaker test than human speech -- replace these with
+# real recordings before trusting the numbers for a production decision.
+
+clips:
+  - audio: eval/audio/j1.wav
+    text: the Quantex pipeline feeds Halberd every morning
+    terms: [Quantex, Halberd]
+
+  - audio: eval/audio/j2.wav
+    text: CRIMS flagged three exceptions in the Nimbus tier
+    terms: [CRIMS, Nimbus]
+
+  - audio: eval/audio/j3.wav
+    text: we migrated Vectrabridge onto the Skylark platform
+    terms: [Vectrabridge, Skylark]
+
+  - audio: eval/audio/j4.wav
+    text: Orbex reconciliation runs before the CRIMS batch
+    terms: [Orbex, CRIMS]
+
+  - audio: eval/audio/arr.wav
+    text: our ARR grew 12 percent this quarter
+    terms: [ARR]
+
+  - audio: eval/audio/ebitda.wav
+    text: the EBITDA margin improved significantly
+    terms: [EBITDA]
+
+  - audio: eval/audio/kuber.wav
+    text: we deployed the service on Kubernetes last night
+    terms: [Kubernetes]
