@@ -116,10 +116,28 @@ the status bar rather than failing silently.
 this repository is public, so `glossary/terms.yaml` never leaves your machine;
 `glossary/terms.example.yaml` ships in its place and is copied on setup.
 
-To import an existing glossary, `import-glossary` writes
-`glossary/candidates.yaml` for a human to review. It deliberately never writes
-`terms.yaml` directly: a wrong entry silently corrupts correction for every
-meeting afterwards.
+### Importing an existing glossary
+
+```bash
+python -m salm import-glossary glossary-export.md     # Markdown tables
+python -m salm import-glossary confluence-export.html # HTML exports
+```
+
+This writes `glossary/candidates.yaml` for a human to review, and deliberately
+never writes `terms.yaml` directly: a wrong entry silently corrupts correction
+for every meeting afterwards. The importer helps by:
+
+- classifying acronyms from jargon, and generating spelled forms only for real
+  initialisms — `ASP` is said "A S P", but `GREEN` meaning "Band 4" is not said
+  "G R E E N", and the giveaway is whether the letters match the expansion's
+  initials;
+- stripping a meaning that repeats its own term, so `GREEN | GREEN (Band 4)`
+  does not expand to `GREEN (GREEN (Band 4))`;
+- flagging expansions too long or too structured to read inline;
+- listing short acronyms, which are the ones that collide with ordinary speech.
+
+**Everything under `glossary/` is gitignored except `terms.example.yaml`**, so
+an imported glossary cannot be committed by accident.
 
 ## How it works
 

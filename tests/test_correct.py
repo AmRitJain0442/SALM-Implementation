@@ -162,11 +162,13 @@ def test_no_common_english_word_is_ever_turned_into_jargon():
     It does not prove the thresholds are safe for words *outside* the list --
     measured separately, those false positives are rare and obscure.
     """
+    from pathlib import Path
+
     from salm.correct import COMMON_WORDS
-    from salm.config import Config
     from salm.glossary import Glossary
 
-    corrector = Corrector(Glossary.load(Config().glossary))
+    example = Path(__file__).resolve().parent.parent / "glossary" / "terms.example.yaml"
+    corrector = Corrector(Glossary.load(example))
 
     corrupted = [w for w in COMMON_WORDS if corrector._best_match(w, 1)]
 

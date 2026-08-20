@@ -10,5 +10,6 @@ __pycache__/
 venv/
 
 # The real firm glossary is proprietary and must never be committed.
-# Ship glossary/terms.example.yaml; keep the live one local.
-glossary/terms.yaml
+# Only glossary/terms.example.yaml is tracked; everything else here is local.
+glossary/*
+!glossary/terms.example.yaml

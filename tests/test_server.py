@@ -12,10 +12,8 @@ from salm.pipeline import Utterance
 
 
 @pytest.fixture
-def client(tmp_path):
-    config = Config()
-    config.transcript_dir = tmp_path
-    return TestClient(create_app(config))
+def client(example_config):
+    return TestClient(create_app(example_config))
 
 
 def test_serves_the_caption_page(client):
@@ -38,10 +36,8 @@ def test_websocket_reports_idle_before_a_session_starts(client):
     assert message == {"type": "status", "state": "idle"}
 
 
-def test_saves_a_transcript_in_both_formats(tmp_path):
-    config = Config()
-    config.transcript_dir = tmp_path
-    manager = SessionManager(config)
+def test_saves_a_transcript_in_both_formats(tmp_path, example_config):
+    manager = SessionManager(example_config)
     manager.utterances = [Utterance(
         raw="Orbeck's runs nightly",
         text="Orbex runs nightly",
@@ -57,19 +53,16 @@ def test_saves_a_transcript_in_both_formats(tmp_path):
     assert record["corrections"] == [["Orbeck's", "Orbex"]]
 
 
-def test_saves_nothing_when_no_one_spoke(tmp_path):
-    config = Config()
-    config.transcript_dir = tmp_path
-    manager = SessionManager(config)
+def test_saves_nothing_when_no_one_spoke(tmp_path, example_config):
+    manager = SessionManager(example_config)
 
     assert manager.save_transcript() is None
     assert list(tmp_path.iterdir()) == []
 
 
-def test_demo_mode_streams_a_corrected_utterance_to_the_browser(tmp_path):
+def test_demo_mode_streams_a_corrected_utterance_to_the_browser(example_config):
     """Exercises the whole path: audio -> VAD -> ASR -> correct -> websocket."""
-    config = Config()
-    config.transcript_dir = tmp_path
+    config = example_config
     config.demo_audio = (Path("eval/audio/j4.wav"),)
     config.demo_realtime = False
 
@@ -92,13 +85,11 @@ def test_demo_mode_streams_a_corrected_utterance_to_the_browser(tmp_path):
     assert utterance["corrections"][0]["canonical"] == "Orbex"
 
 
-def test_publishing_after_the_browser_disconnects_does_not_raise(tmp_path):
+def test_publishing_after_the_browser_disconnects_does_not_raise(tmp_path, example_config):
     """The capture thread outlives the websocket; a closed loop must not kill it."""
     import asyncio
 
-    config = Config()
-    config.transcript_dir = tmp_path
-    manager = SessionManager(config)
+    manager = SessionManager(example_config)
 
     loop = asyncio.new_event_loop()
     queue = asyncio.Queue()

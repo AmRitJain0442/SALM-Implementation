@@ -75,10 +75,35 @@ def cmd_transcribe(args) -> int:
 
 
 def cmd_import(args) -> int:
-    from .importers.confluence import main as importer
+    from .importers import parse_file, to_yaml
 
-    sys.argv = ["confluence", args.export, "-o", args.out]
-    return importer()
+    try:
+        terms = parse_file(args.export)
+    except (ValueError, OSError) as exc:
+        print(f"Could not read {args.export}: {exc}", file=sys.stderr)
+        return 1
+
+    if not terms:
+        print(f"No glossary entries found in {args.export}", file=sys.stderr)
+        return 1
+
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(to_yaml(terms), encoding="utf-8")
+
+    acronyms = sum(1 for t in terms if t["type"] == "acronym")
+    print(f"{len(terms)} candidates ({acronyms} acronyms, "
+          f"{len(terms)-acronyms} jargon) -> {out}")
+
+    risky = [t["canonical"] for t in terms
+             if t["type"] == "acronym" and len(t["canonical"]) <= 3]
+    if risky:
+        print(f"\n{len(risky)} short acronyms are collision-prone in speech:")
+        print(f"  {', '.join(risky)}")
+        print("Check these first -- run `python eval/run_eval.py` after merging.")
+
+    print(f"\nReview {out}, then merge into glossary/terms.yaml.")
+    return 0
 
 
 def cmd_check(args) -> int:
@@ -127,7 +152,8 @@ def main(argv=None) -> int:
     one.add_argument("--show-raw", action="store_true", help="also print what was heard")
     one.set_defaults(func=cmd_transcribe)
 
-    imp = sub.add_parser("import-glossary", help="Confluence export -> candidate terms")
+    imp = sub.add_parser("import-glossary",
+                         help="glossary export (.md or .html) -> candidate terms")
     imp.add_argument("export")
     imp.add_argument("-o", "--out", default="glossary/candidates.yaml")
     imp.set_defaults(func=cmd_import)
