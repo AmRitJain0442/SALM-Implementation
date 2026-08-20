@@ -167,6 +167,10 @@ def create_app(config: Config | None = None) -> FastAPI:
     async def index():
         return FileResponse(WEB / "index.html")
 
+    @app.get("/render.js")
+    async def render_js():
+        return FileResponse(WEB / "render.js", media_type="application/javascript")
+
     @app.get("/api/glossary")
     async def glossary():
         g = Glossary.load(config.glossary)

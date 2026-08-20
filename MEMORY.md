@@ -125,6 +125,13 @@ Found because pytest surfaced it as `PytestUnhandledThreadExceptionWarning`
 rather than a failure — worth keeping test output pristine for exactly this
 reason.
 
+**Display markup could be corrupted by a glossary term matching a CSS class.**
+The page originally marked up utterances by string-replacing on already-escaped
+HTML. A lowercase term — `fix` is entirely plausible in finance (FIX protocol) —
+would have matched `class="fix"` and rewritten the markup. `web/render.js` now
+computes mark ranges over the *plain* text and renders once, and is covered by
+node tests that `pytest` also runs.
+
 ---
 
 ## Environment

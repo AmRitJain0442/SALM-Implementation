@@ -63,6 +63,7 @@ microphone ──► Silero VAD ──► segment at natural pauses
 - [x] End-to-end websocket test: audio → VAD → ASR → correct → browser
 - [x] macOS setup notes
 - [x] Fixed: capture thread crashed when the browser tab closed mid-session
+- [x] `web/render.js` extracted and tested (9 node tests, run from pytest too)
 
 ### In progress
 

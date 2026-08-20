@@ -105,29 +105,20 @@ footer{padding:.6rem 1.4rem;border-top:1px solid var(--rule);background:var(--su
 </main>
 <footer id="status">Connecting&hellip;</footer>
 
+<script src="/render.js"></script>
 <script>
 const feed=document.getElementById('feed'), hdr=document.getElementById('hdr'),
       toggle=document.getElementById('toggle'), statusEl=document.getElementById('status'),
       termsEl=document.getElementById('terms'), repairsEl=document.getElementById('repairs');
 let ws, listening=false, glossary=[], counts=new Map(), repairs=[];
 
-const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const rx  = s => s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+// Shared with the render module so there is one tested implementation.
+const esc = SalmRender.escapeHtml, rx = SalmRender.escapeRegex;
 
 fetch('/api/glossary').then(r=>r.json()).then(d=>{glossary=d.terms;});
 
 function render(u){
-  let html = esc(u.text);
-  // Mark expansions first: they contain the bare acronym, so a correction mark
-  // applied first would sit inside them and break the match.
-  u.expansions.forEach(e=>{
-    const whole = esc(e.canonical+' ('+e.expansion+')');
-    html = html.replace(whole, '<span class="exp">'+whole+'</span>');
-  });
-  u.corrections.forEach(c=>{
-    html = html.replace(new RegExp('\\b'+rx(esc(c.canonical))+'\\b'),
-      '<span class="fix">'+esc(c.canonical)+'</span><span class="was">'+esc(c.heard)+'</span>');
-  });
+  const html = SalmRender.markUp(u);
   const p=document.createElement('p'); p.className='utt'; p.innerHTML=html;
   const empty=feed.querySelector('.empty'); if(empty) feed.innerHTML='';
   feed.appendChild(p); feed.scrollTop=feed.scrollHeight;
