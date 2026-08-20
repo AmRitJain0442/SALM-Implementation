@@ -88,17 +88,20 @@ microphone ──► Silero VAD ──► segment at natural pauses
 The brief specified contextual biasing during transcription. It was built,
 measured, and **turned off** because it made things worse:
 
-| configuration | term recall | WER |
-|---|---|---|
-| transcription only | 8/11 = 73% | 14.3% |
-| **+ glossary correction** | **11/11 = 100%** | **6.1%** |
-| + biasing @ 3 | 7/11 = 64% | 18.4% |
-| + biasing @ 4 | 7/11 = 64% | 28.6% |
-| + biasing @ 5 | 6/11 = 55% | 89.8% |
+| configuration | term recall | WER | false |
+|---|---|---|---|
+| transcription only | 12/17 = 71% | 14.1% | 0 |
+| **+ glossary correction** | **17/17 = 100%** | **4.2%** | **0** |
+| + contextual biasing @ 3 | 11/17 = 65% | 16.9% | 0 |
+| + contextual biasing @ 4 | 9/17 = 53% | 38.0% | 0 |
+| + contextual biasing @ 5 | 10/17 = 59% | 84.5% | 0 |
 
-Biasing loses on both metrics at every setting. The correction pass that
-replaced it reaches **100% recall while cutting WER by more than half**
-(14.3% → 6.1%). Reproduce with `python eval/run_eval.py --biasing`. The biasing code path is kept behind `Config.biasing_enabled` so it can be
+Biasing loses at every setting — recall falls rather than rises. The correction
+pass that replaced it reaches **100% recall while cutting WER by more than two
+thirds** (14.1% → 4.2%), with zero false corrections on control clips.
+Reproduce with `python eval/run_eval.py --biasing`.
+
+The biasing code path is kept behind `Config.biasing_enabled` so it can be
 re-tested on real human audio, which is the one caveat on the result above.
 
 ---

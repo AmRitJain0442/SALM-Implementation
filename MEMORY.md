@@ -34,19 +34,20 @@ actually uses `▁K u ber n et es`, and that mismatch actively corrupts decoding
 
 ## The biasing result (the project's main finding)
 
-Measured over the whole corpus (7 clips, 11 expected term occurrences),
-reproducible with `python eval/run_eval.py --biasing --scores 3,4,5`:
+Measured over the whole corpus (10 jargon clips across two synthetic speakers,
+17 expected term occurrences, plus 4 control clips), reproducible with
+`python eval/run_eval.py --biasing --scores 3,4,5`:
 
-| configuration | term recall | WER |
-|---|---|---|
-| transcription only | 8/11 = 73% | 14.3% |
-| **+ glossary correction** | **11/11 = 100%** | **6.1%** |
-| + biasing @ 3 | 7/11 = 64% | 18.4% |
-| + biasing @ 4 | 7/11 = 64% | 28.6% |
-| + biasing @ 5 | 6/11 = 55% | 89.8% |
+| configuration | term recall | WER | false |
+|---|---|---|---|
+| transcription only | 12/17 = 71% | 14.1% | 0 |
+| **+ glossary correction** | **17/17 = 100%** | **4.2%** | **0** |
+| + contextual biasing @ 3 | 11/17 = 65% | 16.9% | 0 |
+| + contextual biasing @ 4 | 9/17 = 53% | 38.0% | 0 |
+| + contextual biasing @ 5 | 10/17 = 59% | 84.5% | 0 |
 
-**No score improved recall; every score made it worse.** On the full
-7-clip corpus biasing loses on *both* metrics. Above ~4 the context graph fires at wrong
+**No score improved recall; every score made it worse.** Biasing loses on both
+metrics across the whole corpus. Above ~4 the context graph fires at wrong
 positions and corrupts ordinary speech: `"three exceptions"` → `"Quantexceptions"`,
 `"Orbeck's"` → `"Quick's"`. At score ≥5 it degenerates into repeating the
 hotword. There is no usable window between "no effect" and "damage".
@@ -55,7 +56,7 @@ hotword. There is no usable window between "no effect" and "damage".
 Nimbus, Quantex, VectraBridge and Skylark right with no help. Its residual
 errors are *near-misses* — `Halberd→Halbert`, `Orbex→Orbeck's` — which is
 exactly what fuzzy + phonetic matching against a 20–50 term list recovers.
-End-to-end that takes recall to **100% while cutting WER from 14.3% to 6.1%**.
+End-to-end that takes recall to **100% while cutting WER from 14.1% to 4.2%**.
 
 **Caveat, stated plainly:** all of this is synthetic Windows SAPI speech, not
 human audio. The direction is strong and consistent, but real-voice

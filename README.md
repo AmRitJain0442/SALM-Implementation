@@ -21,22 +21,31 @@ output  Orbex reconciliation runs before the CRIMS (Client Risk Management Syste
 
 ## Measured results
 
-On a 7-clip corpus containing 11 jargon occurrences
+On 10 jargon clips across two speakers (17 term occurrences), plus 4 control
+clips of ordinary speech containing no jargon at all
 (`python eval/run_eval.py --biasing`):
 
-| configuration | jargon term recall | word error rate |
-|---|---|---|
-| transcription only | 8/11 = 73% | 14.3% |
-| **+ glossary correction** | **11/11 = 100%** | **6.1%** |
-| + contextual biasing @ 3 | 7/11 = 64% | 18.4% |
-| + contextual biasing @ 5 | 6/11 = 55% | 89.8% |
+| configuration | jargon term recall | word error rate | false corrections |
+|---|---|---|---|
+| transcription only | 12/17 = 71% | 14.1% | 0 |
+| **+ glossary correction** | **17/17 = 100%** | **4.2%** | **0** |
+| + contextual biasing @ 3 | 11/17 = 65% | 16.9% | 0 |
+| + contextual biasing @ 4 | 9/17 = 53% | 38.0% | 0 |
+| + contextual biasing @ 5 | 10/17 = 59% | 84.5% | 0 |
+
+The third column is the one that is easy to forget. Turning ordinary English
+into jargon is worse than leaving a term misspelled, so the control clips exist
+to catch it — and the corrector was swept over 370,000 English words to make
+sure. `crimes` scores 0.91 against `CRIMS`; without a guard it would be
+rewritten in every compliance meeting.
 
 **Contextual biasing is implemented but disabled by default.** It was the
 original plan — bias the decoder toward the glossary so jargon is spelled
-correctly at recognition time. Measured, it lost on both metrics at every
-setting: no recall gain, and rising word error rate as the context graph fired
-at wrong positions (`"three exceptions"` became `"Quantexceptions"`). Correcting
-after the fact reaches full term recall while *more than halving* WER.
+correctly at recognition time. Measured, it lost at every setting: recall fell
+rather than rose, and word error rate climbed as the context graph fired at
+wrong positions (`"three exceptions"` became `"Quantexceptions"`). Correcting
+after the fact reaches full term recall while cutting WER by more than two
+thirds.
 
 Enable it anyway with `python -m salm serve --biasing` if you want to re-measure
 on your own audio. See [`MEMORY.md`](MEMORY.md) for the details.
@@ -137,8 +146,13 @@ on spelling — below the safety threshold — but the two are phonetically
 identical, which is exactly how speech recognition fails. A Soundex match lowers
 the threshold only when the words genuinely sound alike. The greater risk is
 over-correction: turning ordinary English into jargon is worse than leaving a
-term misspelled, so ordinary words are protected by a denylist and a
-conservative floor.
+term misspelled, so the recogniser is believed whenever it produces one of the
+20,000 most frequent English words, and a term is never allowed to swallow a
+longer word that merely starts with it.
+
+Frequency matters more than dictionary membership here. A full dictionary also
+contains `halbert` — and `Halbert → Halberd` is exactly a correction worth
+keeping.
 
 ## Privacy
 
