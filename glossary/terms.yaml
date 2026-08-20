@@ -1,0 +1,132 @@
+# The firm glossary. This is the vocabulary the running system uses.
+#
+# Imported from the acronyms glossary with:
+#   python -m salm import-glossary acronyms_glossary.md
+#
+# To add a term, append an entry and restart the session (Stop then Start) --
+# the file is re-read per session, no server restart needed.
+#
+#   canonical     the correct written form            (required)
+#   expansion     written inline on first use         (required for acronyms)
+#   type          acronym | jargon
+#   spoken_forms  how it is said, if said differently (e.g. "Q B R")
+#   note          context for whoever maintains this  (ignored at runtime)
+#
+# Known rough edge: ROY's expansion is a table of colour bands and reads badly
+# inline. Shorten it or set `type: jargon` if it looks wrong in a transcript.
+
+terms:
+- canonical: AED
+  type: acronym
+  expansion: Assignment end date
+  spoken_forms:
+  - A E D
+- canonical: AP
+  type: acronym
+  expansion: Associate Partner
+  spoken_forms:
+  - A P
+  note: It's when the person is still not effective a partner. They are band 5.
+- canonical: ASP
+  type: acronym
+  expansion: Accountable Senior Partner
+  spoken_forms:
+  - A S P
+- canonical: ROY
+  type: acronym
+  expansion: RED (Band 1); ORANGE (Band 2); YELLOW (Band 3)
+- canonical: GREEN
+  type: acronym
+  expansion: Band 4
+- canonical: BLUE
+  type: acronym
+  expansion: Band 5
+- canonical: INDIGO
+  type: acronym
+  expansion: Band 6 - more senior leaders
+- canonical: EF Recipient
+  type: jargon
+  note: ROYG colleague that is listed as a feedback recipient
+- canonical: TL/Provider
+  type: jargon
+  note: Team Leader/Engagement Manager Band 3 (JEM) or band 4 (EM) who are on the ground with
+    the team acting as their manager. They are assigned at team level. Primary provider has
+    to act on the feedback survey
+- canonical: EA
+  type: acronym
+  expansion: Executive assistants
+  spoken_forms:
+  - E A
+  note: EA's receive the same email what ED receive.
+- canonical: ED
+  type: acronym
+  expansion: Engagement Director
+  spoken_forms:
+  - E D
+  note: Band 5 (AP) or Band 6 (Partners) who are responsible for the engagement. They are
+    assigned either at the overall engagement level, or at team level.
+- canonical: PD
+  type: acronym
+  expansion: People development or Professional development
+  spoken_forms:
+  - P D
+  note: Is the person who assists in the staffing process and general development of recipients.
+- canonical: RP
+  type: acronym
+  expansion: Responsible Partner
+  spoken_forms:
+  - R P
+  note: Partners who oversee the engagement and are expected to make sure things happen in
+    the right way
+- canonical: DIP
+  type: acronym
+  expansion: Data Insights Platform
+  spoken_forms:
+  - D I P
+- canonical: CIR
+  type: acronym
+  expansion: Collaborator Input Report
+  spoken_forms:
+  - C I R
+- canonical: CSP
+  type: acronym
+  expansion: Client Service Professionals
+  spoken_forms:
+  - C S P
+  note: CSPs have LDM survey
+- canonical: FSP
+  type: acronym
+  expansion: Firm Service Professionals
+  spoken_forms:
+  - F S P
+  note: FSPs have FSP Survey
+- canonical: ESP
+  type: acronym
+  expansion: Engagement Service Professionals
+  spoken_forms:
+  - E S P
+- canonical: EC
+  type: acronym
+  expansion: Engagement Contact
+  spoken_forms:
+  - E C
+- canonical: PDTA
+  type: acronym
+  expansion: Performance Development Trajectory Assessment
+  spoken_forms:
+  - P D T A
+- canonical: DRO
+  type: acronym
+  expansion: Development Review Only
+  spoken_forms:
+  - D R O
+- canonical: EPR
+  type: acronym
+  expansion: Engagement Performance Review
+  spoken_forms:
+  - E P R
+- canonical: DGL
+  type: acronym
+  expansion: Development Group Leader
+  spoken_forms:
+  - D G L

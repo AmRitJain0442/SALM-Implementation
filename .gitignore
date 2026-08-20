@@ -9,7 +9,7 @@ __pycache__/
 .venv/
 venv/
 
-# The real firm glossary is proprietary and must never be committed.
-# Only glossary/terms.example.yaml is tracked; everything else here is local.
-glossary/*
-!glossary/terms.example.yaml
+# The firm glossary is tracked so a clone is immediately usable.
+# terms.example.yaml holds invented terms and is what the tests read.
+# Import scratch files stay local.
+glossary/candidates.yaml
