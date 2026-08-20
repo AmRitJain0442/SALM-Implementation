@@ -172,6 +172,35 @@ knife-edge.
 
 ---
 
+## Whisper vs Parakeet, measured
+
+Reproduce with `python eval/compare_engines.py --corrected`.
+
+| engine | size | jargon recall | WER | RTF |
+|---|---|---|---|---|
+| whisper-medium.en | 4.0 GB | 100% | 0.9% | ~0.98 |
+| **parakeet-tdt-0.6b** | **0.66 GB** | **100%** | **3.5%** | **0.087** |
+| whisper-small.en | 1.3 GB | 76% | 14.0% | 0.310 |
+
+**The two-stage design is what makes the small model competitive.** Raw, Parakeet
+gets 71% jargon recall to whisper-medium's 94%. With the glossary correction
+pass both reach 100% — a 0.66 GB model plus a deterministic lookup matches a
+4 GB one on the metric this project exists for.
+
+**Whisper's cost is per second of audio, not per segment.** An earlier guess
+that Whisper's fixed 30-second window would make short VAD segments
+disproportionately expensive was **wrong**: one 3.5 s clip decodes in 3.51 s
+(RTF 1.00), six clips joined into 25.3 s decode in 24.02 s (RTF 0.95). Batching
+does not help. It is simply ~1x real time on this CPU.
+
+Threads plateau early: 4 → 1.073, 8 → 0.977, 12 → 0.980.
+
+`whisper-small.en` loses to Parakeet on every axis, so only medium or larger is
+worth the argument. Its failures are also formatting-shaped —
+`C.R.I.M.S.` with periods, `Khubar nets` for Kubernetes.
+
+---
+
 ## Environment
 
 - Model: `models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8` (~650 MB, gitignored)

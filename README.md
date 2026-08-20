@@ -199,6 +199,23 @@ keeping.
   which is gitignored.
 - The glossary stays local, as above.
 
+## Why this recogniser
+
+`python eval/compare_engines.py --corrected` measures the alternatives on the
+same corpus, glossary and metrics:
+
+| engine | size | jargon recall | WER | RTF |
+|---|---|---|---|---|
+| whisper-medium.en | 4.0 GB | 100% | 0.9% | ~0.98 |
+| **parakeet-tdt-0.6b** | **0.66 GB** | **100%** | **3.5%** | **0.087** |
+| whisper-small.en | 1.3 GB | 76% | 14.0% | 0.310 |
+
+Whisper medium is the more accurate recogniser — but the glossary pass brings
+both to full jargon recall, and Parakeet does it 11x faster in a sixth of the
+space. At RTF ~1.0 Whisper only just keeps pace with live speech, leaving no
+headroom for a live caption pipeline. For an offline pass over recordings,
+where latency does not matter, Whisper medium would be the better choice.
+
 ## Requirements
 
 Python 3.10+. Runs on CPU; no GPU required. Developed on Windows, targeted at

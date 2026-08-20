@@ -172,9 +172,32 @@ the friend asks for "the biasing feature from the plan", show them
 **Don't install NVIDIA NeMo.** It was the original design and is a dead end
 here: the boosting tree is CUDA/Triton-bound with no Apple Silicon path.
 
-**Don't swap in Whisper.** Parakeet TDT was chosen because it is a transducer
-with strong English accuracy and collapses spelled-out acronyms natively
-("A S P" → "ASP"), which is exactly this use case.
+**Whisper was measured, not dismissed.** Run it yourself:
+
+```bash
+python eval/compare_engines.py --corrected
+```
+
+| engine | size | jargon recall | WER | RTF |
+|---|---|---|---|---|
+| whisper-medium.en | 4.0 GB | 100% | 0.9% | ~0.98 |
+| **parakeet-tdt-0.6b** | **0.66 GB** | **100%** | **3.5%** | **0.087** |
+| whisper-small.en | 1.3 GB | 76% | 14.0% | 0.310 |
+
+`whisper-medium.en` is genuinely more accurate on raw transcription — but once
+the glossary pass runs, both reach 100% jargon recall, and Whisper costs 11x the
+decode time and 6x the disk. At RTF ~1.0 it only just keeps pace with live
+speech and has no headroom, so a 6-second utterance lands outside the latency
+budget. `whisper-small.en` is worse than Parakeet on every axis, so "use
+Whisper" is only ever an argument for medium or larger.
+
+Where Whisper *would* be the right call: an offline pass over recordings, where
+latency does not matter and you want the best possible transcript. Parakeet for
+live, Whisper for archive, is a reasonable two-tier design if anyone wants it.
+
+Whisper also has no hotwords API in sherpa-onnx (`from_whisper` takes no
+`hotwords_file`), so switching would permanently foreclose contextual biasing
+rather than leaving it behind a flag. That is currently disabled anyway.
 
 **Don't add an LLM for acronym disambiguation.** The glossary is small and
 mostly unambiguous; a lookup table can't hallucinate and costs nothing. Revisit
