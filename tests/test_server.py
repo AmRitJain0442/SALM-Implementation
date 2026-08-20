@@ -106,3 +106,49 @@ def test_publishing_after_the_browser_disconnects_does_not_raise(tmp_path):
     loop.close()
 
     manager._publish({"type": "status", "state": "stopped"})
+
+
+def _write_glossary(path, *names):
+    path.write_text(
+        "terms:\n" + "".join(f"  - canonical: {n}\n    type: jargon\n" for n in names),
+        encoding="utf-8",
+    )
+
+
+def test_a_term_added_while_the_server_runs_is_used_by_the_next_session(tmp_path):
+    """Editing the glossary must not require a restart.
+
+    The sidebar re-read the file on every request while the pipeline held a
+    copy from startup, so a newly added term showed in the UI but silently
+    never fired.
+    """
+    path = tmp_path / "terms.yaml"
+    _write_glossary(path, "Alpha")
+
+    config = Config()
+    config.glossary = path
+    config.transcript_dir = tmp_path
+    manager = SessionManager(config)
+    assert [t.canonical for t in manager.glossary.terms] == ["Alpha"]
+
+    _write_glossary(path, "Alpha", "Beta")
+
+    assert "Beta" in [t.canonical for t in manager.glossary.terms]
+
+
+def test_a_broken_glossary_is_reported_rather_than_killing_the_session(tmp_path):
+    path = tmp_path / "terms.yaml"
+    path.write_text("terms:\n  - canonical: Alpha\n    typo: oops\n", encoding="utf-8")
+
+    config = Config()
+    config.glossary = path
+    config.transcript_dir = tmp_path
+    manager = SessionManager(config)
+
+    published = []
+    manager._publish = published.append
+    manager.start()
+
+    assert published, "starting with a broken glossary published nothing"
+    assert published[0]["type"] == "error"
+    assert "typo" in published[0]["message"]

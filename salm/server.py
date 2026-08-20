@@ -25,13 +25,23 @@ class SessionManager:
 
     def __init__(self, config: Config):
         self._config = config
-        self._glossary = Glossary.load(config.glossary)
         self._loop: asyncio.AbstractEventLoop | None = None
         self._queue: asyncio.Queue | None = None
         self._thread: threading.Thread | None = None
         self._session: Session | None = None
         self._source = None
         self.utterances: list[Utterance] = []
+
+    @property
+    def glossary(self) -> Glossary:
+        """Read the glossary fresh.
+
+        Adding a term should not require restarting the server. Sessions are
+        infrequent and the file is small, so re-reading per session costs
+        nothing and removes a whole class of "why isn't my new term working"
+        confusion.
+        """
+        return Glossary.load(self._config.glossary)
 
     @property
     def running(self) -> bool:
@@ -62,18 +72,27 @@ class SessionManager:
             return
         self.utterances = []
 
+        try:
+            glossary = self.glossary
+        except (ValueError, OSError) as exc:
+            # A typo in the glossary should say so, not fail silently or take
+            # the session down.
+            self._publish({"type": "error", "message": f"glossary: {exc}"})
+            self._publish({"type": "status", "state": "stopped"})
+            return
+
         hotwords = None
         if self._config.biasing_enabled:
             from .tokenize import to_token_sequence
 
             hotwords = [
                 seq
-                for phrase in self._glossary.biasing_phrases()
+                for phrase in glossary.biasing_phrases()
                 if (seq := to_token_sequence(phrase, self._config.model_dir))
             ]
 
         pipeline = Pipeline(
-            self._glossary,
+            glossary,
             threshold=self._config.correction_threshold,
             policy=self._config.expansion_policy,
         )
@@ -173,10 +192,13 @@ def create_app(config: Config | None = None) -> FastAPI:
 
     @app.get("/api/glossary")
     async def glossary():
-        g = Glossary.load(config.glossary)
+        try:
+            terms = manager.glossary.terms
+        except (ValueError, OSError) as exc:
+            return {"terms": [], "error": str(exc)}
         return {"terms": [
             {"canonical": t.canonical, "expansion": t.expansion, "type": t.type}
-            for t in g.terms
+            for t in terms
         ]}
 
     @app.websocket("/ws")

@@ -68,6 +68,7 @@ microphone ──► Silero VAD ──► segment at natural pauses
 - [x] Second speaker added to the corpus (recall holds across both voices)
 - [x] Over-correction measured over 370k words and fixed (prefix guard +
       20k common-word list); zero false corrections on common words
+- [x] Glossary re-reads per session — adding a term needs no restart
 
 ### In progress
 
