@@ -5,3 +5,4 @@ sounddevice>=0.4.6
 fastapi>=0.110
 uvicorn[standard]>=0.27
 pytest>=8.0
+httpx2  # test client for the server tests

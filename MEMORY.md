@@ -34,8 +34,8 @@ actually uses `▁K u ber n et es`, and that mismatch actively corrupts decoding
 
 ## The biasing result (the project's main finding)
 
-Measured on 4 clips containing 7 invented jargon terms (Quantex, Halberd,
-CRIMS, Nimbus, Vectrabridge, Skylark, Orbex):
+Measured over the whole corpus (7 clips, 11 expected term occurrences),
+reproducible with `python eval/run_eval.py --biasing --scores 3,4,5`:
 
 | configuration | term recall | WER |
 |---|---|---|
@@ -55,7 +55,7 @@ hotword. There is no usable window between "no effect" and "damage".
 Nimbus, Quantex, VectraBridge and Skylark right with no help. Its residual
 errors are *near-misses* — `Halberd→Halbert`, `Orbex→Orbeck's` — which is
 exactly what fuzzy + phonetic matching against a 20–50 term list recovers.
-End-to-end that took recall **78% → 100%**.
+End-to-end that takes recall to **100% while cutting WER from 14.3% to 6.1%**.
 
 **Caveat, stated plainly:** all of this is synthetic Windows SAPI speech, not
 human audio. The direction is strong and consistent, but real-voice

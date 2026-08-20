@@ -51,11 +51,15 @@ microphone ──► Silero VAD ──► segment at natural pauses
 - [x] Git repo, first commit
 - [x] `metrics.py` + `eval/run_eval.py` — reproducible recall/WER harness
 
+- [x] Confluence importer — export → candidate YAML for human review
+- [x] CLI (`python -m salm serve|transcribe|import-glossary|check`)
+- [x] `scripts/setup.py` model downloader + README
+- [x] Server tests (routes, websocket handshake, transcript writing)
+
 ### In progress
 
-- [ ] Confluence importer — export → candidate YAML for human review
-- [ ] CLI entry point + README
-- [ ] Live microphone verification end-to-end
+- [ ] Live microphone verification end-to-end (server runs; needs a human to
+      speak into it — everything up to the mic boundary is covered by tests)
 
 ### Not started
 - [ ] Real-audio re-test of contextual biasing (currently disabled on
