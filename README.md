@@ -54,6 +54,10 @@ on your own audio. See [`MEMORY.md`](MEMORY.md) for the details.
 > recordings. The direction is consistent and large, but confirm on real voices
 > before treating these numbers as final.
 
+Setting this up on a new machine? See [`INSTRUCTIONS.md`](INSTRUCTIONS.md) —
+it covers the macOS specifics, what to verify in what order, and which
+behaviours look like bugs but are deliberate.
+
 ## Quickstart
 
 ```bash

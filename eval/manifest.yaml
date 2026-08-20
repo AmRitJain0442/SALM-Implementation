@@ -5,6 +5,10 @@
 # Synthetic speech is a weaker test than human speech -- replace these with
 # real recordings before trusting the numbers for a production decision.
 
+# The vocabulary these clips were built against. Pinned so the numbers in
+# README.md reproduce regardless of which glossary is installed for live use.
+glossary: glossary/terms.example.yaml
+
 clips:
   - audio: eval/audio/j1.wav
     text: the Quantex pipeline feeds Halberd every morning

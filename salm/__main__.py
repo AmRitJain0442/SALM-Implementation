@@ -13,6 +13,21 @@ import sys
 from pathlib import Path
 
 
+def _glossary_for(config, demo: bool, override: str | None) -> Path:
+    """Pick the vocabulary to run with.
+
+    An explicit --glossary always wins. Otherwise demo mode uses the sample
+    glossary, because the bundled recordings contain invented terms: reading
+    whatever real glossary is installed would show no corrections at all and
+    look like a broken build.
+    """
+    if override:
+        return Path(override)
+    if demo:
+        return Path(__file__).resolve().parent.parent / "glossary" / "terms.example.yaml"
+    return Path(config.glossary)
+
+
 def cmd_serve(args) -> int:
     import uvicorn
 
@@ -30,6 +45,8 @@ def cmd_serve(args) -> int:
             print(f"No demo audio found: {missing or 'eval/audio/*.wav'}", file=sys.stderr)
             return 1
         config.demo_audio = tuple(clips)
+
+    config.glossary = _glossary_for(config, args.demo is not None, args.glossary)
 
     missing = [p for p in (config.model_dir, config.vad_model) if not Path(p).exists()]
     if missing:
@@ -56,6 +73,8 @@ def cmd_transcribe(args) -> int:
     from .session import Session
 
     config = Config()
+    if args.glossary:
+        config.glossary = Path(args.glossary)
     glossary = Glossary.load(config.glossary)
     session = Session(
         model_dir=config.model_dir,
@@ -152,6 +171,8 @@ def main(argv=None) -> int:
     serve.add_argument("--port", type=int, default=8000)
     serve.add_argument("--biasing", action="store_true",
                        help="enable contextual biasing (off by default; measured worse)")
+    serve.add_argument("--glossary", metavar="PATH", default=None,
+                       help="vocabulary to run with (default: glossary/terms.yaml)")
     serve.add_argument("--demo", nargs="*", metavar="WAV", default=None,
                        help="replay recordings instead of the microphone; "
                             "no argument replays eval/audio/*.wav")
@@ -160,6 +181,8 @@ def main(argv=None) -> int:
     one = sub.add_parser("transcribe", help="run one recording through the pipeline")
     one.add_argument("audio")
     one.add_argument("--show-raw", action="store_true", help="also print what was heard")
+    one.add_argument("--glossary", metavar="PATH", default=None,
+                     help="vocabulary to use (default: glossary/terms.yaml)")
     one.set_defaults(func=cmd_transcribe)
 
     imp = sub.add_parser("import-glossary",

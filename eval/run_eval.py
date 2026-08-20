@@ -36,9 +36,16 @@ from salm.metrics import term_recall, word_error_rate      # noqa: E402
 from salm.tokenize import spell_out, to_token_sequence     # noqa: E402
 
 
-def load_manifest(path: Path) -> tuple[list[dict], list[dict]]:
+def load_manifest(path: Path) -> tuple[list[dict], list[dict], Path | None]:
+    """Clips, controls, and the glossary the corpus was built against.
+
+    The glossary is pinned in the manifest because measuring this corpus
+    against an unrelated vocabulary silently reports that correction does
+    nothing, which reads as a regression rather than a mismatch.
+    """
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
-    return data["clips"], data.get("controls", [])
+    declared = data.get("glossary")
+    return data["clips"], data.get("controls", []), Path(declared) if declared else None
 
 
 def hotword_list(glossary: Glossary, model_dir: Path) -> list[str]:
@@ -122,13 +129,16 @@ def main() -> int:
                         help="comma-separated biasing scores to try")
     parser.add_argument("--sweep", action="store_true",
                         help="sweep the correction threshold")
+    parser.add_argument("--glossary", default=None,
+                        help="override the vocabulary declared in the manifest")
     args = parser.parse_args()
 
     config = Config()
-    clips, controls = load_manifest(Path(args.manifest))
-    glossary = Glossary.load(config.glossary)
+    clips, controls, declared = load_manifest(Path(args.manifest))
+    vocabulary = Path(args.glossary) if args.glossary else (declared or config.glossary)
+    glossary = Glossary.load(vocabulary)
     print(f"{len(clips)} jargon clips, {len(controls)} control clips, "
-          f"{len(glossary.terms)} glossary terms\n")
+          f"{len(glossary.terms)} terms from {vocabulary}\n")
 
     started = time.time()
     plain = Transcriber(config.model_dir, num_threads=config.num_threads)
