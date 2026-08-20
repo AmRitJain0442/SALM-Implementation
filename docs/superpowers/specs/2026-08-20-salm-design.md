@@ -1,6 +1,12 @@
 # SALM — Design
 
-**Status:** superseded Stage 1 engine on 2026-08-20 (see "Architecture change").
+**Status: historical.** This records the design as it stood when the engine
+moved from NeMo to sherpa-onnx. It predates the decision to disable contextual
+biasing, which was taken later on measured evidence.
+
+For the system as built, read [`README.md`](../../../README.md); for current
+status, [`PLAN.md`](../../../PLAN.md); for findings and their rationale,
+[`MEMORY.md`](../../../MEMORY.md).
 
 ## Problem
 
@@ -72,6 +78,13 @@ biasing list and the expansion table cannot drift apart.
 `first_use` — expand the first mention, leave later ones bare, keeping long
 transcripts readable. Applied to finalised segments only, so captions never
 flicker between expanded and unexpanded forms.
+
+## What changed after this document
+
+Contextual biasing — the whole point of Stage 1 above — was measured and turned
+off. It reduced jargon recall and raised word error rate at every setting. A
+deterministic correction pass replaced it, reaching 100% term recall at 4.2%
+WER. See MEMORY.md.
 
 ## Verification
 
