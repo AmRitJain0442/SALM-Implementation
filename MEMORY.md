@@ -111,6 +111,22 @@ turns out to help accuracy.
 
 ---
 
+## Bugs found and fixed
+
+**Capture thread died when the browser tab closed.** The session runs on a
+worker thread and publishes to the websocket's asyncio loop. Closing the tab
+closes that loop, and the next `call_soon_threadsafe` raised
+`RuntimeError: Event loop is closed` *on the worker thread*, killing the session
+mid-meeting. `SessionManager._publish` now checks `loop.is_closed()` and
+swallows the race. Dropping the message is safe: utterances are kept in memory
+and still reach the saved transcript.
+
+Found because pytest surfaced it as `PytestUnhandledThreadExceptionWarning`
+rather than a failure — worth keeping test output pristine for exactly this
+reason.
+
+---
+
 ## Environment
 
 - Model: `models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8` (~650 MB, gitignored)

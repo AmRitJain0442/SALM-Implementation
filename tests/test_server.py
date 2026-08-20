@@ -90,3 +90,19 @@ def test_demo_mode_streams_a_corrected_utterance_to_the_browser(tmp_path):
     assert "Orbex" in utterance["text"]
     assert "Client Risk Management System" in utterance["text"]
     assert utterance["corrections"][0]["canonical"] == "Orbex"
+
+
+def test_publishing_after_the_browser_disconnects_does_not_raise(tmp_path):
+    """The capture thread outlives the websocket; a closed loop must not kill it."""
+    import asyncio
+
+    config = Config()
+    config.transcript_dir = tmp_path
+    manager = SessionManager(config)
+
+    loop = asyncio.new_event_loop()
+    queue = asyncio.Queue()
+    manager.attach(loop, queue)
+    loop.close()
+
+    manager._publish({"type": "status", "state": "stopped"})

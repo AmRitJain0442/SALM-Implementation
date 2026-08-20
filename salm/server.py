@@ -41,8 +41,21 @@ class SessionManager:
         self._loop, self._queue = loop, queue
 
     def _publish(self, payload: dict) -> None:
-        if self._loop and self._queue:
-            self._loop.call_soon_threadsafe(self._queue.put_nowait, payload)
+        """Hand a message to the websocket, if anyone is still listening.
+
+        The capture thread outlives the browser connection. When a tab closes,
+        its event loop goes away and publishing would otherwise raise on the
+        worker thread and kill the session mid-meeting. Losing the message is
+        fine -- utterances are kept in `self.utterances` and still reach the
+        saved transcript.
+        """
+        loop, queue = self._loop, self._queue
+        if loop is None or queue is None or loop.is_closed():
+            return
+        try:
+            loop.call_soon_threadsafe(queue.put_nowait, payload)
+        except RuntimeError:
+            pass
 
     def start(self) -> None:
         if self.running:
