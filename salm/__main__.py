@@ -106,16 +106,23 @@ def cmd_import(args) -> int:
     return 0
 
 
-def cmd_check(args) -> int:
+def _config_for_check():
     from .config import Config
 
-    config = Config()
+    return Config()
+
+
+def cmd_check(args) -> int:
+    config = _config_for_check()
     ok = True
+    models_missing = False
 
     for label, path in [("model", config.model_dir), ("VAD", config.vad_model),
                         ("glossary", config.glossary)]:
         exists = Path(path).exists()
         ok &= exists
+        if not exists and label in ("model", "VAD"):
+            models_missing = True
         print(f"[{'ok' if exists else '--'}] {label}: {path}")
 
     try:
@@ -129,6 +136,9 @@ def cmd_check(args) -> int:
     if ok:
         from .glossary import Glossary
         print(f"[ok] {len(Glossary.load(config.glossary).terms)} glossary terms loaded")
+        print("\nReady:  python -m salm serve")
+    elif models_missing:
+        print("\nModels are not downloaded yet. Run:  python scripts/setup.py")
     return 0 if ok else 1
 
 

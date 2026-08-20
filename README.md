@@ -57,11 +57,15 @@ on your own audio. See [`MEMORY.md`](MEMORY.md) for the details.
 ## Quickstart
 
 ```bash
+git clone https://github.com/AmRitJain0442/SALM-Implementation.git
+cd SALM-Implementation
 pip install -r requirements.txt
 python scripts/setup.py      # downloads ~700 MB of models, once
 python -m salm check         # verifies models, glossary, microphone
 python -m salm serve         # http://127.0.0.1:8000
 ```
+
+The glossary ships with the repository, so there is nothing else to set up.
 
 No microphone handy, or demoing to a room? Replay the sample recordings
 through the live pipeline instead:
@@ -112,9 +116,10 @@ recovered too, so `K Y See` also resolves.
 Stop then Start, and the new terms are live. A malformed file is reported in
 the status bar rather than failing silently.
 
-**The live glossary is gitignored.** Your firm's term list is proprietary and
-this repository is public, so `glossary/terms.yaml` never leaves your machine;
-`glossary/terms.example.yaml` ships in its place and is copied on setup.
+`glossary/terms.yaml` is committed, so a clone comes with the vocabulary
+already in place — nothing to copy across. `glossary/terms.example.yaml` holds
+invented terms and is what the test suite reads, so tests never depend on the
+real glossary.
 
 ### Importing an existing glossary
 
@@ -136,8 +141,8 @@ for every meeting afterwards. The importer helps by:
 - flagging expansions too long or too structured to read inline;
 - listing short acronyms, which are the ones that collide with ordinary speech.
 
-**Everything under `glossary/` is gitignored except `terms.example.yaml`**, so
-an imported glossary cannot be committed by accident.
+`glossary/candidates.yaml` is gitignored — import scratch output stays local
+until you have reviewed it and merged what you want into `terms.yaml`.
 
 ## How it works
 
