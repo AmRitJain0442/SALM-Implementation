@@ -69,8 +69,10 @@ a config flag rather than deleted.
 
 **Deterministic correction, not an LLM.** 20–50 mostly-unique terms means a
 lookup table cannot hallucinate, is auditable, needs no memory the ASR wants,
-and runs in microseconds. `expand.py` keeps a seam for a disambiguator if real
-transcripts ever show acronym clashes.
+and runs in microseconds. If real transcripts ever show acronym clashes,
+disambiguation belongs in `expand.py`, which is already a separate module with
+one entry point — but nothing is stubbed for it today, and nothing should be
+until there is evidence the problem exists.
 
 **Offline model + VAD, not a streaming model.** The latency budget is 3–5 s and
 audio is mic-only, so VAD can cut at natural pauses and hand a full utterance to

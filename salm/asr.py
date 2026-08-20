@@ -112,10 +112,6 @@ class SpeechSegmenter:
             self._vad.pop()
         return segments
 
-    @property
-    def speech_detected(self) -> bool:
-        return self._vad.is_speech_detected()
-
 
 # Short acknowledgements the model invents when handed near-silence. The VAD
 # filters most non-speech, but brief noise still slips through and would
