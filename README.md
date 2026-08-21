@@ -58,6 +58,9 @@ Setting this up on a new machine? See [`INSTRUCTIONS.md`](INSTRUCTIONS.md) —
 it covers the macOS specifics, what to verify in what order, and which
 behaviours look like bugs but are deliberate.
 
+Running a demo? [`DEMO.md`](DEMO.md) has a verified five-sentence script and
+the two things not to say on stage.
+
 ## Quickstart
 
 ```bash

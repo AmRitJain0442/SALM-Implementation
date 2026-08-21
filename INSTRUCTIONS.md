@@ -208,6 +208,15 @@ labelled recordings of real meetings.
 
 ---
 
+## Showing it to someone
+
+[`DEMO.md`](DEMO.md) has a five-sentence script verified end to end, what each
+line should produce, and two failure modes to avoid on stage. Run through it
+once yourself before the demo — it was verified with synthetic speech, not a
+human voice.
+
+---
+
 ## Adding vocabulary
 
 Edit `glossary/terms.yaml`:
